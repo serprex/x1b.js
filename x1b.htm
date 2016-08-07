@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<title>x1b</title>
+<script src="x1b.js" type="text/javascript"></script>
+<style>
+body { font-family:Monospace; white-space:pre }
+</style>
+<div id="vt" style="width:900px;height:600px"></div>
+<script>"use strict";
+(function(){
+	var vtdiv = document.getElementById("vt");
+	var vt = new x1b(vtdiv, 90, 60);
+	var socket = new WebSocket("ws://"+location.hostname+":13220");
+	var buffer = [];
+	var attempts = 0, attemptTimeout = 0;
+	socket.onopen = function(){
+		attempts = 0;
+		if (attemptTimeout){
+			clearTimeout(attemptTimeout);
+			attemptTimeout = 0;
+		}
+		buffer.forEach(this.send, this);
+		buffer.length = 0;
+		console.log("Connected");
+	}
+	socket.onclose = function(){
+		if (attemptTimeout) return;
+		if (attempts < 8) attempts++;
+		var timeout = 99+Math.floor(99*Math.random())*attempts;
+		attemptTimeout = setTimeout(function(){
+			attemptTimeout = 0;
+			var oldsock = socket;
+			socket = new WebSocket("ws://"+location.hostname+":13220");
+			socket.onopen = oldsock.onopen;
+			socket.onclose = oldsock.onclose;
+			socket.onmessage = oldsock.onmessage;
+		}, timeout);
+		console.log("Reconnecting in " + timeout + "ms");
+	}
+	socket.onmessage = function(msg){
+		var data = JSON.parse(msg.data);
+		if (data.x == "out"){
+			console.log(data.data);
+			vt.write(data.data);
+		}
+	}
+	function emit(x, data){
+		if (!data) data = {};
+		data.x = x;
+		console.log("sent",data);
+		var msg = JSON.stringify(data);
+		if (socket && socket.readyState == 1){
+			socket.send(msg);
+		}else{
+			buffer.push(msg);
+		}
+	}
+	document.addEventListener("keydown", function(e){
+		emit("kd", {k:e.key});
+	});
+})();
+</script>

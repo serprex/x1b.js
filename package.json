@@ -1,0 +1,13 @@
+{
+  "name": "x1b.js",
+  "description": "VT in JS what could go wrong",
+  "readme": "README.md",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/serprex/x1b.js.git"
+  },
+  "dependencies": {
+    "ws": "^1.1.1"
+  },
+  "license": "MIT"
+}
