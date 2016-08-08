@@ -10,7 +10,7 @@ body { font-family:Monospace; white-space:pre }
 	var vtdiv = document.getElementById("vt");
 	var vt = new x1b(vtdiv, 90, 60);
 	var socket = new WebSocket("ws://"+location.hostname+":13220");
-	var buffer = [];
+	var buffer = "";
 	var attempts = 0, attemptTimeout = 0;
 	socket.onopen = function(){
 		attempts = 0;
@@ -18,8 +18,8 @@ body { font-family:Monospace; white-space:pre }
 			clearTimeout(attemptTimeout);
 			attemptTimeout = 0;
 		}
-		buffer.forEach(this.send, this);
-		buffer.length = 0;
+		this.send(buffer);
+		buffer = "";
 		console.log("Connected");
 	}
 	socket.onclose = function(){
@@ -36,26 +36,19 @@ body { font-family:Monospace; white-space:pre }
 		}, timeout);
 		console.log("Reconnecting in " + timeout + "ms");
 	}
-	socket.onmessage = function(msg){
-		var data = JSON.parse(msg.data);
-		if (data.x == "out"){
-			console.log(data.data);
-			vt.write(data.data);
-		}
+	socket.onmessage = function(data){
+		console.log(data.data);
+		vt.write(data.data);
 	}
-	function emit(x, data){
-		if (!data) data = {};
-		data.x = x;
-		console.log("sent",data);
-		var msg = JSON.stringify(data);
+	function emit(data){
 		if (socket && socket.readyState == 1){
-			socket.send(msg);
+			socket.send(data);
 		}else{
-			buffer.push(msg);
+			buffer += data;
 		}
 	}
 	document.addEventListener("keydown", function(e){
-		emit("kd", {k:e.key});
+		emit(e.key);
 	});
 })();
 </script>

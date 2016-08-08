@@ -13,12 +13,9 @@ const app = http.createServer(function(req, res){
 function onSocketClose(){
 	this.prog.kill();
 }
-function onSocketMessage(rawData){
-	const data = JSON.parse(rawData);
+function onSocketMessage(data){
 	console.log(data);
-	if (data.x == "kd") {
-		this.prog.stdin.write(data.k, 'utf-8');
-	}
+	this.prog.stdin.write(data, 'utf-8');
 }
 function onSocketConnection(socket){
 	socket.prog = child.spawn("../rg/target/release/rg", ["a"], {
@@ -27,7 +24,7 @@ function onSocketConnection(socket){
 	socket.prog.stdout.on('data', data => {
 		try {
 		if (socket.readyState == 1) {
-			socket.send(JSON.stringify({x:"out",data:data.toString('utf-8')}));
+			socket.send(data.toString('utf-8'));
 		}}catch(e){console.log('outdata', e)}
 	});
 	socket.prog.stdout.on('close', data => {
