@@ -18,7 +18,7 @@ function onSocketMessage(data){
 	this.prog.stdin.write(data, 'utf-8');
 }
 function onSocketConnection(socket){
-	socket.prog = child.spawn("../rg/target/release/rg", ["a"], {
+	socket.prog = child.spawn("../rg/target/release/rg", {
 		stdio: ['pipe', 'pipe', 'pipe'],
 	});
 	socket.prog.stdout.on('data', data => {
