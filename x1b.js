@@ -6,10 +6,18 @@ function x1b(div, w, h){
 	this.w = w;
 	this.h = h;
 	this.buffer = [];
+	this.bg = "#000";
+	this.fg = "#fff";
 	for (var i=0; i<h; i++){
 		this.buffer[i] = [];
-		for (var j=0; j<w; j++)
-			this.buffer[i][j] = " ";
+		for (var j=0; j<w; j++) {
+			var span = this.buffer[i][j] = document.createElement('span');
+			span.textContent = ' ';
+			span.style.backgroundColor = this.bg;
+			span.style.color = this.fg;
+			div.appendChild(span);
+		}
+		div.appendChild(document.createElement('br'));
 	}
 }
 
@@ -36,16 +44,37 @@ x1b.prototype.write = function(s) {
 					this.y = args[0] - 1;
 					esc = 0;
 				}
+				else if (si == "m") {
+					switch (args[0]){
+						case 30:this.fg=args[1]?"#444":"#000";break;
+						case 31:this.fg=args[1]?"#f00":"#800";break;
+						case 32:this.fg=args[1]?"#0f0":"#080";break;
+						case 33:this.fg=args[1]?"#ff0":"#880";break;
+						case 34:this.fg=args[1]?"#00f":"#008";break;
+						case 35:this.fg=args[1]?"#f0f":"#808";break;
+						case 36:this.fg=args[1]?"#0ff":"#088";break;
+						case 37:this.fg=args[1]?"#fff":"#ccc";break;
+						case 39:this.fg=args[1]?"#fff":"#fff";break;
+						case 40:this.bg=args[1]?"#444":"#000";break;
+						case 41:this.bg=args[1]?"#f00":"#800";break;
+						case 42:this.bg=args[1]?"#0f0":"#080";break;
+						case 43:this.bg=args[1]?"#ff0":"#880";break;
+						case 44:this.bg=args[1]?"#00f":"#008";break;
+						case 45:this.bg=args[1]?"#f0f":"#808";break;
+						case 46:this.bg=args[1]?"#0ff":"#088";break;
+						case 47:this.bg=args[1]?"#fff":"#ccc";break;
+						case 49:this.bg=args[1]?"#000":"#000";break;
+					}
+					esc = 0;
+				}
 			}
 		} else if (esc === 0) {
-			this.buffer[this.y][this.x] = si;
+			this.buffer[this.y][this.x].textContent = si;
+			this.buffer[this.y][this.x].style.backgroundColor = this.bg;
+			this.buffer[this.y][this.x].style.color = this.fg;
 			this.x++;
 		}
 	}
-	var text = [];
-	for (var i=0; i<this.buffer.length; i++)
-		text.push(this.buffer[i].join(''));
-	this.div.textContent = text.join("\n");
 }
 
 return x1b;})();
