@@ -30,6 +30,8 @@ x1b.prototype.setch = function(ch) {
 	for (var key in this.style) span.style[key] = this.style[key];
 }
 
+var rgb4 = ["#000","#800","#080","#880","#008", "#808", "#088","#ccc",
+	"#444", "#f00", "#0f0", "#ff0", "#00f", "#f0f", "0ff", "#fff"];
 x1b.prototype.write = function(s) {
 	var esc = 0, args, num;
 	for (var i=0; i<s.length; i++) {
@@ -55,43 +57,41 @@ x1b.prototype.write = function(s) {
 					break;
 				case "m":
 					if (args[0]) {
-						switch (args[0]){
-						case 30:this.style.color="#000";break;
-						case 31:this.style.color="#800";break;
-						case 32:this.style.color="#080";break;
-						case 33:this.style.color="#880";break;
-						case 34:this.style.color="#008";break;
-						case 35:this.style.color="#808";break;
-						case 36:this.style.color="#088";break;
-						case 37:this.style.color="#ccc";break;
-						case 39:this.style.color="#fff";break;
-						case 40:this.style.backgroundColor="#000";break;
-						case 41:this.style.backgroundColor="#800";break;
-						case 42:this.style.backgroundColor="#080";break;
-						case 43:this.style.backgroundColor="#880";break;
-						case 44:this.style.backgroundColor="#008";break;
-						case 45:this.style.backgroundColor="#808";break;
-						case 46:this.style.backgroundColor="#088";break;
-						case 47:this.style.backgroundColor="#ccc";break;
-						case 49:this.style.backgroundColor="#000";break;
-						case 90:this.style.color="#444";break;
-						case 91:this.style.color="#f00";break;
-						case 92:this.style.color="#0f0";break;
-						case 93:this.style.color="#ff0";break;
-						case 94:this.style.color="#00f";break;
-						case 95:this.style.color="#f0f";break;
-						case 96:this.style.color="#0ff";break;
-						case 97:this.style.color="#fff";break;
-						case 99:this.style.color="#fff";break;
-						case 100:this.style.backgroundColor="#444";break;
-						case 101:this.style.backgroundColor="#f00";break;
-						case 102:this.style.backgroundColor="#0f0";break;
-						case 103:this.style.backgroundColor="#ff0";break;
-						case 104:this.style.backgroundColor="#00f";break;
-						case 105:this.style.backgroundColor="#f0f";break;
-						case 106:this.style.backgroundColor="#0ff";break;
-						case 107:this.style.backgroundColor="#fff";break;
-						case 109:this.style.backgroundColor="#fff";break;
+						var a0 = args[0];
+						if (a0 >= 30 && a0 < 38){
+							this.style.color = rgb4[a0-30];
+						} else if (a0 >= 40 && a0 < 48){
+							this.style.backgroundColor = rgb4[a0-40];
+						} else if (a0 >= 90 && a0 < 98) {
+							this.style.color = rgb4[a0-82];
+						} else if (a0 >= 100 && a0 < 108) {
+							this.style.backgroundColor = rgb4[a0-92];
+						} else {
+							switch (a0) {
+							case 38:
+							case 48:
+								var prop = a0 == 38 ? "color" : "backgroundColor";
+								if (args[1] == 5) {
+									var a2 = args[2];
+									// 256 color
+									if (a2 < 16) {
+										this.style[prop] = colors[a2];
+									} else if (a2 < 232) {
+										var a = a2-16;
+										this.style[prop] = "#" + (((a%6)/6 * 256) << 16 | (((a/6|0)%6)/6 * 256) << 8 | ((a/36|0)/6 * 256)).toString(16);
+									} else {
+										this.style[prop] = "#"+((a2*10.24|0)*0x10101).toString(16);
+									}
+								} else if (args[1] == 2) {
+									// 24 bit color
+								   this.style[prop] = "#"+args[2].toString(16)+args[3].toString(16)+args[4].toString(16);
+								}
+								break;
+							case 39:this.style.color="#fff";break;
+							case 49:this.style.backgroundColor="#000";break;
+							case 99:this.style.color="#fff";break;
+							case 109:this.style.backgroundColor="#fff";break;
+							}
 						}
 					} else {
 						this.style.backgroundColor = "#000";
